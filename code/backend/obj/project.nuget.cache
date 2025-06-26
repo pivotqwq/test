@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "7jL5tMHTwms=",
+  "dgSpecHash": "Q3SJJ5y+e6U=",
   "success": true,
   "projectFilePath": "F:\\projects\\disease-data-management\\code\\backend\\backend.csproj",
   "expectedPackageFiles": [
@@ -47,8 +47,7 @@
     "C:\\Users\\王炜翔\\.nuget\\packages\\system.reflection.metadata\\7.0.0\\system.reflection.metadata.7.0.0.nupkg.sha512",
     "C:\\Users\\王炜翔\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
     "C:\\Users\\王炜翔\\.nuget\\packages\\system.text.json\\9.0.5\\system.text.json.9.0.5.nupkg.sha512",
-    "C:\\Users\\王炜翔\\.nuget\\packages\\system.threading.channels\\7.0.0\\system.threading.channels.7.0.0.nupkg.sha512",
-    "C:\\Users\\王炜翔\\.nuget\\packages\\microsoft.net.sdk.compilers.toolset\\9.0.203\\microsoft.net.sdk.compilers.toolset.9.0.203.nupkg.sha512"
+    "C:\\Users\\王炜翔\\.nuget\\packages\\system.threading.channels\\7.0.0\\system.threading.channels.7.0.0.nupkg.sha512"
   ],
   "logs": []
 }

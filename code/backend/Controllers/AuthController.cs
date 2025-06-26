@@ -52,8 +52,8 @@ namespace backend.Controllers
                 username = request.Username,
                 password = request.Password, // 注意：实际项目中密码应该哈希存储
                 email = request.Email,
-                phone = "默认值",
-                urlBase64 = "Base64pic",
+                name = "未设置",
+                profession = "未设置",
             };
 
             _context.Users.Add(newUser);

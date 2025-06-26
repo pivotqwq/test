@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql; // 确保已安装 Npgsql 包
 
+Console.Clear(); // 清除控制台所有内容
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 Console.WriteLine($"🔗 实际连接字符串: {connectionString}");
