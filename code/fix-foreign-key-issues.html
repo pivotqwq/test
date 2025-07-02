@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>外键约束问题诊断和修复</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .button.success {
+            background-color: #28a745;
+        }
+        .button.danger {
+            background-color: #dc3545;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .warning { color: orange; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .status-box {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status-ok { background-color: #d4edda; color: #155724; }
+        .status-error { background-color: #f8d7da; color: #721c24; }
+        .status-warning { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>外键约束问题诊断和修复工具</h1>
+    
+    <div class="section">
+        <h2>1. 检查数据库状态</h2>
+        <button class="button" onclick="checkDatabaseStatus()">检查数据库状态</button>
+        <div id="databaseStatus"></div>
+    </div>
+
+    <div class="section">
+        <h2>2. 检查患者基础信息</h2>
+        <button class="button" onclick="checkPatients()">获取患者列表</button>
+        <div id="patientsStatus"></div>
+    </div>
+
+    <div class="section">
+        <h2>3. 检查调查员资质表</h2>
+        <button class="button" onclick="checkInvestigators()">获取调查员列表</button>
+        <div id="investigatorsStatus"></div>
+    </div>
+
+    <div class="section">
+        <h2>4. 创建默认调查员记录</h2>
+        <button class="button success" onclick="createDefaultInvestigator()">创建默认调查员</button>
+        <div id="createInvestigatorStatus"></div>
+    </div>
+
+    <div class="section">
+        <h2>5. 测试数据插入（修复后）</h2>
+        <button class="button" onclick="testDataInsertion()">测试数据插入</button>
+        <div id="testInsertionStatus"></div>
+    </div>
+
+    <div class="section">
+        <h2>6. 诊断报告</h2>
+        <button class="button" onclick="generateDiagnosticReport()">生成诊断报告</button>
+        <div id="diagnosticReport"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let globalState = {
+            patients: [],
+            investigators: [],
+            issues: [],
+            solutions: []
+        };
+
+        // 显示结果
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const statusClass = type === 'success' ? 'status-ok' : 
+                              type === 'error' ? 'status-error' : 
+                              type === 'warning' ? 'status-warning' : '';
+            element.innerHTML = `<div class="status-box ${statusClass}">${message}</div>`;
+        }
+
+        // 显示JSON数据
+        function showJSON(elementId, data, message = '') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <div class="info">${message}</div>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+
+        // 1. 检查数据库状态
+        async function checkDatabaseStatus() {
+            try {
+                showResult('databaseStatus', '正在检查数据库连接...', 'info');
+                
+                // 检查后端API是否可访问
+                const response = await fetch(`${API_BASE}/PatientBasicInfo`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    showResult('databaseStatus', '✅ 数据库连接正常', 'success');
+                } else {
+                    throw new Error(`API响应错误: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('数据库连接检查失败:', error);
+                showResult('databaseStatus', `❌ 数据库连接失败: ${error.message}`, 'error');
+                globalState.issues.push('数据库连接失败');
+            }
+        }
+
+        // 2. 检查患者基础信息
+        async function checkPatients() {
+            try {
+                showResult('patientsStatus', '正在获取患者列表...', 'info');
+                
+                const response = await fetch(`${API_BASE}/PatientBasicInfo`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const patients = await response.json();
+                globalState.patients = Array.isArray(patients) ? patients : [];
+                
+                console.log('获取到的患者数据:', globalState.patients);
+
+                if (globalState.patients.length > 0) {
+                    const message = `✅ 找到 ${globalState.patients.length} 个患者记录`;
+                    const detail = globalState.patients.slice(0, 5).map(p => 
+                        `- ${p.patient_id}: ${p.name} (${p.gender}, ${p.age_at_diagnosis || 'N/A'}岁)`
+                    ).join('\n');
+                    
+                    showJSON('patientsStatus', {
+                        count: globalState.patients.length,
+                        sample: globalState.patients.slice(0, 3)
+                    }, message);
+                } else {
+                    showResult('patientsStatus', '⚠️ 未找到任何患者记录，这可能导致外键约束错误', 'warning');
+                    globalState.issues.push('数据库中没有患者记录');
+                }
+
+            } catch (error) {
+                console.error('获取患者列表失败:', error);
+                showResult('patientsStatus', `❌ 获取失败: ${error.message}`, 'error');
+                globalState.issues.push('无法获取患者列表');
+            }
+        }
+
+        // 3. 检查调查员资质表
+        async function checkInvestigators() {
+            try {
+                showResult('investigatorsStatus', '正在获取调查员列表...', 'info');
+                
+                const response = await fetch(`${API_BASE}/InvestigatorQualification`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const investigators = await response.json();
+                globalState.investigators = Array.isArray(investigators) ? investigators : [];
+                
+                console.log('获取到的调查员数据:', globalState.investigators);
+
+                if (globalState.investigators.length > 0) {
+                    const message = `✅ 找到 ${globalState.investigators.length} 个调查员记录`;
+                    showJSON('investigatorsStatus', {
+                        count: globalState.investigators.length,
+                        sample: globalState.investigators.slice(0, 3)
+                    }, message);
+                } else {
+                    showResult('investigatorsStatus', '⚠️ 未找到任何调查员记录，这是导致外键约束错误的主要原因！', 'warning');
+                    globalState.issues.push('数据库中没有调查员记录');
+                }
+
+            } catch (error) {
+                console.error('获取调查员列表失败:', error);
+                showResult('investigatorsStatus', `❌ 获取失败: ${error.message}`, 'error');
+                globalState.issues.push('无法获取调查员列表');
+            }
+        }
+
+        // 4. 创建默认调查员记录
+        async function createDefaultInvestigator() {
+            try {
+                showResult('createInvestigatorStatus', '正在创建默认调查员记录...', 'info');
+                
+                const defaultInvestigators = [
+                    {
+                        investigator_id: 'INV001',
+                        name: '系统默认调查员',
+                        qualification: '医学研究员',
+                        experience_years: 5,
+                        certification_level: '高级'
+                    },
+                    {
+                        investigator_id: 'INV002',
+                        name: '张调研员',
+                        qualification: '临床医生',
+                        experience_years: 8,
+                        certification_level: '高级'
+                    },
+                    {
+                        investigator_id: 'INV003',
+                        name: '李调研员',
+                        qualification: '护理师',
+                        experience_years: 3,
+                        certification_level: '中级'
+                    }
+                ];
+
+                const results = [];
+                for (const investigator of defaultInvestigators) {
+                    try {
+                        const response = await fetch(`${API_BASE}/InvestigatorQualification`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(investigator)
+                        });
+
+                        const result = await response.json();
+                        if (response.ok) {
+                            results.push({ success: true, investigator, result });
+                            console.log(`成功创建调查员 ${investigator.investigator_id}:`, result);
+                        } else {
+                            results.push({ success: false, investigator, error: result });
+                            console.warn(`创建调查员 ${investigator.investigator_id} 失败:`, result);
+                        }
+                    } catch (error) {
+                        results.push({ success: false, investigator, error: error.message });
+                        console.error(`创建调查员 ${investigator.investigator_id} 异常:`, error);
+                    }
+                }
+
+                const successCount = results.filter(r => r.success).length;
+                const message = `✅ 成功创建了 ${successCount}/${defaultInvestigators.length} 个调查员记录`;
+                
+                showJSON('createInvestigatorStatus', results, message);
+                
+                if (successCount > 0) {
+                    globalState.solutions.push(`创建了${successCount}个默认调查员记录`);
+                    // 重新检查调查员列表
+                    await checkInvestigators();
+                }
+
+            } catch (error) {
+                console.error('创建默认调查员失败:', error);
+                showResult('createInvestigatorStatus', `❌ 创建失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 5. 测试数据插入（修复后）
+        async function testDataInsertion() {
+            try {
+                showResult('testInsertionStatus', '正在测试数据插入...', 'info');
+                
+                // 确保有患者和调查员数据
+                if (globalState.patients.length === 0) {
+                    throw new Error('没有可用的患者记录，请先检查患者数据');
+                }
+                
+                if (globalState.investigators.length === 0) {
+                    throw new Error('没有可用的调查员记录，请先创建默认调查员');
+                }
+
+                const testPatientId = globalState.patients[0].patient_id;
+                const testInvestigatorId = globalState.investigators[0].investigator_id;
+                
+                console.log(`使用患者ID: ${testPatientId}, 调查员ID: ${testInvestigatorId}`);
+
+                // 测试家庭环境数据插入
+                const householdData = {
+                    household_id: `HH${Date.now()}`,
+                    patient_id: testPatientId,
+                    residence_type: '1',
+                    building_age: 15,
+                    ventilation_quality: '良好',
+                    indoor_pm25: 25.5,
+                    pet_exposure: true,
+                    pet_type: '猫',
+                    bedding_material: '棉质',
+                    record_date: new Date().toISOString(),
+                    investigator_id: testInvestigatorId
+                };
+
+                const householdResponse = await fetch(`${API_BASE}/HouseholdEnvironment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(householdData)
+                });
+
+                const householdResult = await householdResponse.json();
+                
+                // 测试健康行为数据插入
+                const healthData = {
+                    individual_id: `IHB${Date.now()}`,
+                    patient_id: testPatientId,
+                    household_id: householdData.household_id,
+                    diet_pattern: '均衡饮食',
+                    vitamin_d_level: 25.5,
+                    sun_exposure: true,
+                    vaccination_status: true,
+                    antibiotic_usage_frequency: '很少',
+                    early_life_medication: '无特殊用药记录',
+                    smoke_exposure: false,
+                    investigator_id: testInvestigatorId
+                };
+
+                const healthResponse = await fetch(`${API_BASE}/IndividualHealthBehavior`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(healthData)
+                });
+
+                const healthResult = await healthResponse.json();
+
+                // 测试问卷数据插入
+                const questionnaireData = {
+                    questionnaire_id: `Q${Date.now()}`,
+                    patient_id: testPatientId,
+                    form_type: '综合健康调研',
+                    fill_date: new Date().toISOString().split('T')[0],
+                    data_source: '线上问卷',
+                    investigator_id: testInvestigatorId,
+                    raw_data: JSON.stringify({
+                        health_score: 85,
+                        risk_factors: ['工作压力'],
+                        recommendations: ['规律作息', '适度运动']
+                    }),
+                    create_time: new Date().toISOString()
+                };
+
+                const questionnaireResponse = await fetch(`${API_BASE}/QuestionnaireData`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(questionnaireData)
+                });
+
+                const questionnaireResult = await questionnaireResponse.json();
+
+                const results = {
+                    household: {
+                        success: householdResponse.ok,
+                        status: householdResponse.status,
+                        data: householdResult
+                    },
+                    health: {
+                        success: healthResponse.ok,
+                        status: healthResponse.status,
+                        data: healthResult
+                    },
+                    questionnaire: {
+                        success: questionnaireResponse.ok,
+                        status: questionnaireResponse.status,
+                        data: questionnaireResult
+                    }
+                };
+
+                const successCount = Object.values(results).filter(r => r.success).length;
+                const message = `测试完成：${successCount}/3 个API成功`;
+                
+                if (successCount === 3) {
+                    showJSON('testInsertionStatus', results, `✅ ${message} - 外键约束问题已解决！`);
+                    globalState.solutions.push('数据插入测试全部通过');
+                } else {
+                    showJSON('testInsertionStatus', results, `⚠️ ${message} - 仍有部分问题需要解决`);
+                }
+
+            } catch (error) {
+                console.error('测试数据插入失败:', error);
+                showResult('testInsertionStatus', `❌ 测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 6. 生成诊断报告
+        async function generateDiagnosticReport() {
+            const report = {
+                timestamp: new Date().toLocaleString('zh-CN'),
+                database_status: '已检查',
+                patients_count: globalState.patients.length,
+                investigators_count: globalState.investigators.length,
+                issues_found: globalState.issues,
+                solutions_applied: globalState.solutions,
+                recommendations: []
+            };
+
+            // 生成建议
+            if (globalState.patients.length === 0) {
+                report.recommendations.push('数据库中需要添加患者基础信息记录');
+            }
+            
+            if (globalState.investigators.length === 0) {
+                report.recommendations.push('数据库中需要添加调查员资质记录');
+            } else {
+                report.recommendations.push('建议在前端代码中使用现有的调查员ID');
+            }
+
+            if (globalState.issues.length === 0 && globalState.solutions.length > 0) {
+                report.recommendations.push('系统状态良好，可以正常使用编辑功能');
+            }
+
+            const message = `
+                <h3>诊断报告</h3>
+                <p><strong>检查时间：</strong>${report.timestamp}</p>
+                <p><strong>患者记录：</strong>${report.patients_count} 个</p>
+                <p><strong>调查员记录：</strong>${report.investigators_count} 个</p>
+                <p><strong>发现问题：</strong>${report.issues_found.length} 个</p>
+                <p><strong>已应用解决方案：</strong>${report.solutions_applied.length} 个</p>
+            `;
+
+            showJSON('diagnosticReport', report, message);
+        }
+
+        // 页面加载完成后显示提示
+        window.onload = function() {
+            console.log('外键约束诊断工具已加载');
+            showResult('databaseStatus', '点击按钮开始检查数据库状态', 'info');
+        };
+    </script>
+</body>
+</html> 

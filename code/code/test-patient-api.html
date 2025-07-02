@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>患者管理API测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        input, select {
+            margin: 5px;
+            padding: 5px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>患者管理API测试</h1>
+    
+    <div class="section">
+        <h2>1. 获取患者列表</h2>
+        <button onclick="getPatients()">获取所有患者</button>
+    </div>
+    
+    <div class="section">
+        <h2>2. 新增患者</h2>
+        <input type="text" id="newName" placeholder="姓名" value="测试患者">
+        <select id="newGender">
+            <option value="M">男</option>
+            <option value="F">女</option>
+        </select>
+        <input type="date" id="newBirthDate" value="2020-01-01">
+        <select id="newResidence">
+            <option value="1">城市</option>
+            <option value="2">城镇</option>
+            <option value="3">农村</option>
+        </select>
+        <input type="text" id="newPhone" placeholder="电话" value="13800138000">
+        <input type="text" id="newAllergy" placeholder="过敏史" value="无">
+        <button onclick="createPatient()">新增患者</button>
+    </div>
+    
+    <div class="section">
+        <h2>3. 修改患者</h2>
+        <input type="text" id="updateId" placeholder="患者ID (如P001)">
+        <input type="text" id="updateName" placeholder="新姓名">
+        <button onclick="updatePatient()">修改患者</button>
+    </div>
+    
+    <div class="section">
+        <h2>4. 删除患者</h2>
+        <input type="text" id="deleteId" placeholder="患者ID (如P001)">
+        <button onclick="deletePatient()">删除患者</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        const resultDiv = document.getElementById('result');
+        
+        function showResult(message, isError = false) {
+            resultDiv.className = isError ? 'error' : 'success';
+            resultDiv.textContent = typeof message === 'object' ? JSON.stringify(message, null, 2) : message;
+        }
+        
+        async function getPatients() {
+            try {
+                const response = await fetch(`${API_BASE}/PatientBasicInfo`);
+                const data = await response.json();
+                showResult(`获取到 ${data.length} 个患者:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult(`错误: ${error.message}`, true);
+            }
+        }
+        
+        async function createPatient() {
+            try {
+                const patientData = {
+                    name: document.getElementById('newName').value,
+                    gender: document.getElementById('newGender').value,
+                    birth_date: document.getElementById('newBirthDate').value,
+                    residence_type: document.getElementById('newResidence').value,
+                    phone: document.getElementById('newPhone').value,
+                    allergy_history: document.getElementById('newAllergy').value,
+                    age_at_diagnosi: 3
+                };
+                
+                const response = await fetch(`${API_BASE}/PatientBasicInfo`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(patientData)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                showResult(`患者创建成功:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult(`错误: ${error.message}`, true);
+            }
+        }
+        
+        async function updatePatient() {
+            try {
+                const patientId = document.getElementById('updateId').value;
+                const newName = document.getElementById('updateName').value;
+                
+                if (!patientId) {
+                    throw new Error('请输入患者ID');
+                }
+                
+                const updateData = {
+                    name: newName
+                };
+                
+                const response = await fetch(`${API_BASE}/PatientBasicInfo/${patientId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                showResult(`患者更新成功:\n${JSON.stringify(data, null, 2)}`);
+            } catch (error) {
+                showResult(`错误: ${error.message}`, true);
+            }
+        }
+        
+        async function deletePatient() {
+            try {
+                const patientId = document.getElementById('deleteId').value;
+                
+                if (!patientId) {
+                    throw new Error('请输入患者ID');
+                }
+                
+                const response = await fetch(`${API_BASE}/PatientBasicInfo/${patientId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                showResult(`患者删除成功: ${data.message}`);
+            } catch (error) {
+                showResult(`错误: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html> 

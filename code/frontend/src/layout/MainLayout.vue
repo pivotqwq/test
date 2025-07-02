@@ -4,11 +4,13 @@
     <div class="main-wrapper">
       <TopNavbar @command="handleCommand" />
       <div class="app-main">
-        <router-view v-slot="{ Component }">
-          <transition name="fade-transform" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
+        <ErrorBoundary>
+          <router-view v-slot="{ Component }">
+            <transition name="fade-transform" mode="out-in">
+              <component :is="Component" />
+            </transition>
+          </router-view>
+        </ErrorBoundary>
       </div>
     </div>
   </div>
@@ -17,9 +19,10 @@
 <script>
 import SideBar from './SideBar.vue'
 import TopNavbar from './TopNavbar.vue'
+import ErrorBoundary from '@/components/ErrorBoundary.vue'
 
 export default {
-  components: { SideBar, TopNavbar },
+  components: { SideBar, TopNavbar, ErrorBoundary },
   methods: {
     handleCommand(command) {
       switch (command) {
@@ -71,7 +74,6 @@ export default {
 .app-main {
   flex: 1;
   padding: 20px;
-  overflow: auto;
   background-color: #fff;
   margin-top: 10px; /* 顶部导航栏高度 */
 }

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加调研数据</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .form-row {
+            display: flex;
+            margin: 10px 0;
+            align-items: center;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            flex: 1;
+            padding: 8px;
+            margin-left: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            margin: 10px 5px;
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+        .submit-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        .clear-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+        .test-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        .required {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>添加完整调研数据</h1>
+    
+    <!-- 基本信息 -->
+    <div class="form-section">
+        <h2>基本信息</h2>
+        <div class="form-row">
+            <label for="patientId">患者ID <span class="required">*</span>:</label>
+            <input type="text" id="patientId" placeholder="如：P001">
+        </div>
+        <div class="form-row">
+            <label for="investigatorId">调研员ID <span class="required">*</span>:</label>
+            <input type="text" id="investigatorId" placeholder="如：INV001">
+        </div>
+    </div>
+
+    <!-- 家庭环境数据 -->
+    <div class="form-section">
+        <h2>家庭环境数据</h2>
+        <div class="form-row">
+            <label for="residenceType">居住类型 <span class="required">*</span>:</label>
+            <select id="residenceType">
+                <option value="">请选择</option>
+                <option value="1">公寓</option>
+                <option value="2">独立住宅</option>
+                <option value="3">联排别墅</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label for="buildingAge">建筑年龄:</label>
+            <input type="number" id="buildingAge" placeholder="年">
+        </div>
+        <div class="form-row">
+            <label for="ventilationQuality">通风质量:</label>
+            <select id="ventilationQuality">
+                <option value="良好">良好</option>
+                <option value="一般">一般</option>
+                <option value="较差">较差</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label for="indoorPm25">室内PM2.5:</label>
+            <input type="number" id="indoorPm25" placeholder="μg/m³">
+        </div>
+        <div class="form-row">
+            <label for="petExposure">宠物饲养:</label>
+            <select id="petExposure">
+                <option value="false">无</option>
+                <option value="true">有</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label for="petType">宠物类型:</label>
+            <input type="text" id="petType" placeholder="如：猫、狗">
+        </div>
+        <div class="form-row">
+            <label for="beddingMaterial">床上用品材质:</label>
+            <input type="text" id="beddingMaterial" placeholder="如：棉质、丝质">
+        </div>
+    </div>
+
+    <!-- 个人健康行为数据 -->
+    <div class="form-section">
+        <h2>个人健康行为数据</h2>
+        <div class="form-row">
+            <label for="dietPattern">饮食模式:</label>
+            <input type="text" id="dietPattern" placeholder="如：均衡饮食、素食为主">
+        </div>
+        <div class="form-row">
+            <label for="vitaminDLevel">维生素D水平:</label>
+            <input type="number" id="vitaminDLevel" step="0.1" placeholder="ng/mL">
+        </div>
+        <div class="form-row">
+            <label for="sunExposure">日照情况:</label>
+            <select id="sunExposure">
+                <option value="true">充足</option>
+                <option value="false">不足</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label for="vaccinationStatus">疫苗接种状态:</label>
+            <select id="vaccinationStatus">
+                <option value="true">已接种</option>
+                <option value="false">未接种</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label for="antibioticUsage">抗生素使用频率:</label>
+            <input type="text" id="antibioticUsage" placeholder="如：很少、偶尔、经常">
+        </div>
+        <div class="form-row">
+            <label for="earlyLifeMedication">生命早期用药记录:</label>
+            <textarea id="earlyLifeMedication" rows="3" placeholder="详细记录早期用药情况"></textarea>
+        </div>
+        <div class="form-row">
+            <label for="smokeExposure">二手烟暴露:</label>
+            <select id="smokeExposure">
+                <option value="false">无</option>
+                <option value="true">有</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 区域环境数据 -->
+    <div class="form-section">
+        <h2>区域环境数据</h2>
+        <div class="form-row">
+            <label for="regionName">区域名称:</label>
+            <input type="text" id="regionName" placeholder="如：市中心、郊区">
+        </div>
+        <div class="form-row">
+            <label for="greenSpaceRate">绿化率:</label>
+            <input type="number" id="greenSpaceRate" min="0" max="100" placeholder="%">
+        </div>
+        <div class="form-row">
+            <label for="airQualityIndex">空气质量指数:</label>
+            <input type="number" id="airQualityIndex" placeholder="AQI">
+        </div>
+        <div class="form-row">
+            <label for="pollenConcentration">花粉浓度:</label>
+            <select id="pollenConcentration">
+                <option value="低">低</option>
+                <option value="中">中</option>
+                <option value="高">高</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label for="climateType">气候类型:</label>
+            <input type="text" id="climateType" placeholder="如：温带、亚热带">
+        </div>
+        <div class="form-row">
+            <label for="avgTemperature">平均温度:</label>
+            <input type="number" id="avgTemperature" placeholder="°C">
+        </div>
+        <div class="form-row">
+            <label for="humidityLevel">湿度水平:</label>
+            <input type="number" id="humidityLevel" min="0" max="100" placeholder="%">
+        </div>
+    </div>
+
+    <!-- 问卷调查数据 -->
+    <div class="form-section">
+        <h2>问卷调查数据</h2>
+        <div class="form-row">
+            <label for="formType">问卷类型 <span class="required">*</span>:</label>
+            <select id="formType">
+                <option value="">请选择</option>
+                <option value="健康评估">健康评估</option>
+                <option value="环境暴露">环境暴露</option>
+                <option value="心理健康">心理健康</option>
+                <option value="营养状况">营养状况</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label for="dataSource">数据来源:</label>
+            <input type="text" id="dataSource" placeholder="如：线上问卷、电话访谈">
+        </div>
+        <div class="form-row">
+            <label for="rawData">原始问卷数据:</label>
+            <textarea id="rawData" rows="5" placeholder="JSON格式的问卷数据"></textarea>
+        </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="form-section">
+        <button type="button" class="submit-btn" onclick="submitAllData()">提交所有数据</button>
+        <button type="button" class="test-btn" onclick="fillTestData()">填入测试数据</button>
+        <button type="button" class="clear-btn" onclick="clearAllForms()">清空表单</button>
+    </div>
+
+    <!-- 结果显示 -->
+    <div class="form-section">
+        <h2>提交结果</h2>
+        <div id="result" class="result-box">等待提交数据...</div>
+    </div>
+
+    <script>
+        function generateId() {
+            return 'ID' + Date.now() + Math.floor(Math.random() * 1000);
+        }
+
+        function fillTestData() {
+            // 基本信息
+            document.getElementById('patientId').value = 'P001';
+            document.getElementById('investigatorId').value = 'INV001';
+            
+            // 家庭环境
+            document.getElementById('residenceType').value = '1';
+            document.getElementById('buildingAge').value = '10';
+            document.getElementById('ventilationQuality').value = '良好';
+            document.getElementById('indoorPm25').value = '25';
+            document.getElementById('petExposure').value = 'true';
+            document.getElementById('petType').value = '猫';
+            document.getElementById('beddingMaterial').value = '棉质';
+            
+            // 个人健康行为
+            document.getElementById('dietPattern').value = '均衡饮食';
+            document.getElementById('vitaminDLevel').value = '30.5';
+            document.getElementById('sunExposure').value = 'true';
+            document.getElementById('vaccinationStatus').value = 'true';
+            document.getElementById('antibioticUsage').value = '很少';
+            document.getElementById('earlyLifeMedication').value = '无特殊用药记录';
+            document.getElementById('smokeExposure').value = 'false';
+            
+            // 区域环境
+            document.getElementById('regionName').value = '市中心';
+            document.getElementById('greenSpaceRate').value = '35';
+            document.getElementById('airQualityIndex').value = '85';
+            document.getElementById('pollenConcentration').value = '中';
+            document.getElementById('climateType').value = '温带';
+            document.getElementById('avgTemperature').value = '20';
+            document.getElementById('humidityLevel').value = '60';
+            
+            // 问卷调查
+            document.getElementById('formType').value = '健康评估';
+            document.getElementById('dataSource').value = '线上问卷';
+            document.getElementById('rawData').value = JSON.stringify({
+                "q1": 4,
+                "q2": 5,
+                "q3": 3,
+                "health_score": 85,
+                "notes": "整体健康状况良好"
+            }, null, 2);
+        }
+
+        function clearAllForms() {
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+            document.getElementById('result').textContent = '等待提交数据...';
+        }
+
+        async function submitAllData() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = '正在提交数据...';
+            
+            try {
+                const patientId = document.getElementById('patientId').value;
+                const investigatorId = document.getElementById('investigatorId').value;
+                
+                if (!patientId || !investigatorId) {
+                    throw new Error('患者ID和调研员ID为必填项');
+                }
+
+                // 1. 提交家庭环境数据
+                const householdData = {
+                    household_id: generateId(),
+                    patient_id: patientId,
+                    residence_type: document.getElementById('residenceType').value,
+                    building_age: parseInt(document.getElementById('buildingAge').value) || null,
+                    ventilation_quality: document.getElementById('ventilationQuality').value,
+                    indoor_pm25: parseFloat(document.getElementById('indoorPm25').value) || null,
+                    pet_exposure: document.getElementById('petExposure').value === 'true',
+                    pet_type: document.getElementById('petType').value,
+                    bedding_material: document.getElementById('beddingMaterial').value,
+                    record_date: new Date().toISOString(),
+                    investigator_id: investigatorId
+                };
+
+                // 2. 提交个人健康行为数据
+                const healthBehaviorData = {
+                    individual_id: generateId(),
+                    patient_id: patientId,
+                    household_id: householdData.household_id,
+                    diet_pattern: document.getElementById('dietPattern').value,
+                    vitamin_d_level: parseFloat(document.getElementById('vitaminDLevel').value) || null,
+                    sun_exposure: document.getElementById('sunExposure').value === 'true',
+                    vaccination_status: document.getElementById('vaccinationStatus').value === 'true',
+                    antibiotic_usage_frequency: document.getElementById('antibioticUsage').value,
+                    early_life_medication: document.getElementById('earlyLifeMedication').value,
+                    smoke_exposure: document.getElementById('smokeExposure').value === 'true',
+                    investigator_id: investigatorId
+                };
+
+                // 3. 提交区域环境数据
+                const regionData = {
+                    region_id: generateId(),
+                    region_name: document.getElementById('regionName').value,
+                    green_space_rate: parseFloat(document.getElementById('greenSpaceRate').value) || null,
+                    air_quality_index: parseInt(document.getElementById('airQualityIndex').value) || null,
+                    pollen_concentration: document.getElementById('pollenConcentration').value,
+                    climate_type: document.getElementById('climateType').value,
+                    avg_temperature: parseFloat(document.getElementById('avgTemperature').value) || null,
+                    humidity_level: parseFloat(document.getElementById('humidityLevel').value) || null,
+                    update_date: new Date().toISOString()
+                };
+
+                // 4. 提交问卷调查数据
+                const questionnaireData = {
+                    questionnaire_id: generateId(),
+                    patient_id: patientId,
+                    form_type: document.getElementById('formType').value,
+                    fill_date: new Date().toISOString().split('T')[0],
+                    data_source: document.getElementById('dataSource').value,
+                    investigator_id: investigatorId,
+                    raw_data: document.getElementById('rawData').value,
+                    create_time: new Date().toISOString()
+                };
+
+                // 依次提交到各个API
+                const results = [];
+
+                // 提交家庭环境数据
+                const householdResponse = await fetch('http://localhost:5000/api/HouseholdEnvironment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(householdData)
+                });
+                results.push({ api: 'HouseholdEnvironment', status: householdResponse.status, data: await householdResponse.json() });
+
+                // 提交个人健康行为数据
+                const healthResponse = await fetch('http://localhost:5000/api/IndividualHealthBehavior', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(healthBehaviorData)
+                });
+                results.push({ api: 'IndividualHealthBehavior', status: healthResponse.status, data: await healthResponse.json() });
+
+                // 提交区域环境数据
+                const regionResponse = await fetch('http://localhost:5000/api/RegionalEnvironment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(regionData)
+                });
+                results.push({ api: 'RegionalEnvironment', status: regionResponse.status, data: await regionResponse.json() });
+
+                // 提交问卷调查数据
+                const questionnaireResponse = await fetch('http://localhost:5000/api/QuestionnaireData', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(questionnaireData)
+                });
+                results.push({ api: 'QuestionnaireData', status: questionnaireResponse.status, data: await questionnaireResponse.json() });
+
+                // 显示结果
+                resultDiv.innerHTML = '✅ 数据提交完成！\n\n' + 
+                    results.map(r => `${r.api}: ${r.status >= 200 && r.status < 300 ? '成功' : '失败'} (${r.status})`).join('\n') +
+                    '\n\n详细结果:\n' + JSON.stringify(results, null, 2);
+
+            } catch (error) {
+                console.error('提交失败:', error);
+                resultDiv.innerHTML = `❌ 提交失败: ${error.message}`;
+            }
+        }
+
+        // 页面加载时填入测试数据
+        window.onload = function() {
+            fillTestData();
+        };
+    </script>
+</body>
+</html> 

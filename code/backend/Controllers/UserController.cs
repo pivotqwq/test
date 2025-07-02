@@ -32,17 +32,27 @@ namespace backend.Controllers
                         new {code = 500, message = "数据库上下文未正确初始化" });
                 }
 
-                var users = await _context.Users
-                    .AsNoTracking()
-                    .ToListAsync();
+                // 获取用户和管理员信息
+                var usersWithRoles = await (from user in _context.Users
+                                          join admin in _context.Admins on user.Id equals admin.user_id into adminGroup
+                                          from adminInfo in adminGroup.DefaultIfEmpty()
+                                          select new {
+                                              user.Id,
+                                              user.username,
+                                              user.email,
+                                              user.phone,
+                                              user.name,
+                                              user.profession,
+                                              role = adminInfo != null && adminInfo.is_admin ? "admin" : "user",
+                                              created_at = DateTime.UtcNow // 模拟创建时间，实际应该从数据库获取
+                                          }).AsNoTracking().ToListAsync();
 
-                return Ok(new { code = 200, message = users });
+                return Ok(usersWithRoles);
             }
             catch (Exception ex)
             {
-
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                    new { code = 500,message = "处理请求时发生内部错误" });
+                    new { code = 500, message = "处理请求时发生内部错误" });
             }
         }
 
@@ -152,6 +162,73 @@ namespace backend.Controllers
             return Ok(new { code = 200, message = "头像更新成功" , avatarPath = user.urlBase64});
         }
 
+        // POST: api/User/setAdmin
+        [HttpPost("setAdmin")]
+        public async Task<IActionResult> SetUserAsAdmin([FromBody] SetAdminRequest request)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.username == request.Username);
+                if (user == null)
+                {
+                    return NotFound(new { code = 404, message = "用户不存在" });
+                }
+
+                // 检查是否已经是管理员
+                var existingAdmin = await _context.Admins.FirstOrDefaultAsync(a => a.user_id == user.Id);
+                if (existingAdmin != null)
+                {
+                    existingAdmin.is_admin = true;
+                }
+                else
+                {
+                    // 创建新的管理员记录
+                    var newAdmin = new backend.Data.Admin
+                    {
+                        user_id = user.Id,
+                        is_admin = true
+                    };
+                    _context.Admins.Add(newAdmin);
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok(new { code = 200, message = $"用户 {request.Username} 已设置为管理员" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { code = 500, message = "设置管理员失败" });
+            }
+        }
+
+        // POST: api/User/removeAdmin
+        [HttpPost("removeAdmin")]
+        public async Task<IActionResult> RemoveAdminRole([FromBody] SetAdminRequest request)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.username == request.Username);
+                if (user == null)
+                {
+                    return NotFound(new { code = 404, message = "用户不存在" });
+                }
+
+                var adminRecord = await _context.Admins.FirstOrDefaultAsync(a => a.user_id == user.Id);
+                if (adminRecord != null)
+                {
+                    adminRecord.is_admin = false;
+                    await _context.SaveChangesAsync();
+                }
+
+                return Ok(new { code = 200, message = $"已移除用户 {request.Username} 的管理员权限" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { code = 500, message = "移除管理员权限失败" });
+            }
+        }
+
         public class UserChange
         {
             public string? Username { get; set; }
@@ -159,6 +236,11 @@ namespace backend.Controllers
             public string? Phone { get; set; }
             public string? Name { get; set; }
             public string? Profession { get; set; }
+        }
+
+        public class SetAdminRequest
+        {
+            public string Username { get; set; }
         }
 
     }

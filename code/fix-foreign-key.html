@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修复外键约束问题</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover { background-color: #0056b3; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>外键约束问题修复工具</h1>
+    
+    <div class="section">
+        <h2>步骤1：检查调查员记录</h2>
+        <button class="button" onclick="checkInvestigators()">检查调查员记录</button>
+        <div id="investigatorStatus"></div>
+    </div>
+
+    <div class="section">
+        <h2>步骤2：创建默认调查员</h2>
+        <button class="button" onclick="createDefaultInvestigators()">创建默认调查员记录</button>
+        <div id="createStatus"></div>
+    </div>
+
+    <div class="section">
+        <h2>步骤3：测试数据插入</h2>
+        <button class="button" onclick="testDataInsertion()">测试修复后的数据插入</button>
+        <div id="testStatus"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        function showJSON(elementId, data, message = '') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <div class="info">${message}</div>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+
+        async function checkInvestigators() {
+            try {
+                showResult('investigatorStatus', '正在检查调查员记录...', 'info');
+                
+                const response = await fetch(`${API_BASE}/InvestigatorQualification`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const investigators = await response.json();
+                console.log('调查员记录:', investigators);
+
+                if (Array.isArray(investigators) && investigators.length > 0) {
+                    showJSON('investigatorStatus', investigators, `✅ 找到 ${investigators.length} 个调查员记录`);
+                } else {
+                    showResult('investigatorStatus', '⚠️ 未找到调查员记录，这是导致外键约束错误的原因！', 'error');
+                }
+
+            } catch (error) {
+                console.error('检查失败:', error);
+                showResult('investigatorStatus', `❌ 检查失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function createDefaultInvestigators() {
+            try {
+                showResult('createStatus', '正在创建默认调查员记录...', 'info');
+                
+                const response = await fetch(`${API_BASE}/InvestigatorQualification/seed-default`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const result = await response.json();
+                console.log('创建结果:', result);
+
+                if (response.ok) {
+                    showJSON('createStatus', result, '✅ ' + result.message);
+                } else {
+                    throw new Error(result.message || result.error || '创建失败');
+                }
+
+            } catch (error) {
+                console.error('创建失败:', error);
+                showResult('createStatus', `❌ 创建失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDataInsertion() {
+            try {
+                showResult('testStatus', '正在测试数据插入...', 'info');
+                
+                // 首先获取患者和调查员数据
+                const [patientsRes, investigatorsRes] = await Promise.all([
+                    fetch(`${API_BASE}/PatientBasicInfo`),
+                    fetch(`${API_BASE}/InvestigatorQualification`)
+                ]);
+
+                const patients = await patientsRes.json();
+                const investigators = await investigatorsRes.json();
+
+                if (!Array.isArray(patients) || patients.length === 0) {
+                    throw new Error('没有可用的患者记录');
+                }
+
+                if (!Array.isArray(investigators) || investigators.length === 0) {
+                    throw new Error('没有可用的调查员记录');
+                }
+
+                const testPatientId = patients[0].patient_id;
+                const testInvestigatorId = investigators[0].investigator_id;
+
+                console.log(`使用患者ID: ${testPatientId}, 调查员ID: ${testInvestigatorId}`);
+
+                // 测试家庭环境数据插入
+                const householdData = {
+                    household_id: `HH${Date.now()}`,
+                    patient_id: testPatientId,
+                    residence_type: '1',
+                    building_age: 15,
+                    ventilation_quality: '良好',
+                    indoor_pm25: 25.5,
+                    pet_exposure: true,
+                    pet_type: '猫',
+                    bedding_material: '棉质',
+                    record_date: new Date().toISOString(),
+                    investigator_id: testInvestigatorId
+                };
+
+                const householdResponse = await fetch(`${API_BASE}/HouseholdEnvironment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(householdData)
+                });
+
+                const householdResult = await householdResponse.json();
+
+                const results = {
+                    test_data: { testPatientId, testInvestigatorId },
+                    household_environment: {
+                        success: householdResponse.ok,
+                        status: householdResponse.status,
+                        data: householdResult
+                    }
+                };
+
+                if (householdResponse.ok) {
+                    showJSON('testStatus', results, '✅ 数据插入测试成功！外键约束问题已解决');
+                } else {
+                    showJSON('testStatus', results, '❌ 数据插入仍然失败，需要进一步检查');
+                }
+
+            } catch (error) {
+                console.error('测试失败:', error);
+                showResult('testStatus', `❌ 测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 页面加载时自动检查
+        window.onload = function() {
+            console.log('外键约束修复工具已加载');
+            checkInvestigators();
+        };
+    </script>
+</body>
+</html> 

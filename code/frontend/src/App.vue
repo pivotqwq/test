@@ -26,8 +26,7 @@ li {
 }
 
 body {
-  overflow: hidden;
-  padding-right:0 !important;
+  padding-right: 0 !important;
 }
 
 a {

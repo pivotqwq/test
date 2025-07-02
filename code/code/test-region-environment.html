@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>区域环境数据测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+        .primary-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        .success-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        .warning-btn {
+            background-color: #ffc107;
+            color: black;
+        }
+        .result-box {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        input, select {
+            margin: 5px;
+            padding: 8px;
+            width: 200px;
+        }
+        .form-row {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>区域环境数据测试</h1>
+    
+    <div class="test-section">
+        <h2>区域环境API测试</h2>
+        <button class="primary-btn" onclick="getAllRegions()">获取所有区域</button>
+        <button class="success-btn" onclick="seedRegionData()">初始化区域数据</button>
+        <button class="warning-btn" onclick="getDefaultRegion()">获取默认区域</button>
+        
+        <div class="form-row">
+            <label for="regionIdInput">区域ID:</label>
+            <input type="text" id="regionIdInput" value="REGION_001" placeholder="输入区域ID">
+            <button class="primary-btn" onclick="getRegionById()">按ID获取区域</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>创建新区域数据</h2>
+        <div class="form-row">
+            <label for="newRegionId">区域ID:</label>
+            <input type="text" id="newRegionId" placeholder="如: REGION_004">
+        </div>
+        <div class="form-row">
+            <label for="regionName">区域名称:</label>
+            <input type="text" id="regionName" placeholder="如: 新区域">
+        </div>
+        <div class="form-row">
+            <label for="greenSpaceRate">绿化率(%):</label>
+            <input type="number" id="greenSpaceRate" min="0" max="100" value="30">
+        </div>
+        <div class="form-row">
+            <label for="airQualityIndex">空气质量指数:</label>
+            <input type="number" id="airQualityIndex" min="0" max="500" value="85">
+        </div>
+        <div class="form-row">
+            <label for="pollenConcentration">花粉浓度:</label>
+            <select id="pollenConcentration">
+                <option value="低">低</option>
+                <option value="中" selected>中</option>
+                <option value="高">高</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label for="climateType">气候类型:</label>
+            <input type="text" id="climateType" value="温带">
+        </div>
+        <div class="form-row">
+            <label for="avgTemperature">平均温度(°C):</label>
+            <input type="number" id="avgTemperature" value="20">
+        </div>
+        <div class="form-row">
+            <label for="humidityLevel">湿度水平(%):</label>
+            <input type="number" id="humidityLevel" min="0" max="100" value="60">
+        </div>
+        <button class="success-btn" onclick="createRegion()">创建区域</button>
+    </div>
+
+    <div class="test-section">
+        <h2>API响应结果</h2>
+        <div id="result" class="result-box">等待API调用...</div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        const getAuthHeader = () => ({
+            'Authorization': 'Bearer ' + localStorage.getItem('token'),
+            'Content-Type': 'application/json'
+        });
+
+        function updateResult(data) {
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function getAllRegions() {
+            try {
+                const response = await fetch(`${API_BASE}/RegionalEnvironment`, {
+                    headers: getAuthHeader()
+                });
+                const data = await response.json();
+                updateResult({
+                    status: response.status,
+                    message: '获取所有区域数据',
+                    data: data
+                });
+            } catch (error) {
+                updateResult({ error: error.message });
+            }
+        }
+
+        async function seedRegionData() {
+            try {
+                const response = await fetch(`${API_BASE}/RegionalEnvironment/seed`, {
+                    method: 'POST',
+                    headers: getAuthHeader()
+                });
+                const data = await response.json();
+                updateResult({
+                    status: response.status,
+                    message: '初始化区域环境数据',
+                    data: data
+                });
+            } catch (error) {
+                updateResult({ error: error.message });
+            }
+        }
+
+        async function getDefaultRegion() {
+            try {
+                const response = await fetch(`${API_BASE}/RegionalEnvironment/default`, {
+                    headers: getAuthHeader()
+                });
+                const data = await response.json();
+                updateResult({
+                    status: response.status,
+                    message: '获取默认区域数据',
+                    data: data
+                });
+            } catch (error) {
+                updateResult({ error: error.message });
+            }
+        }
+
+        async function getRegionById() {
+            const regionId = document.getElementById('regionIdInput').value;
+            if (!regionId) {
+                updateResult({ error: '请输入区域ID' });
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/RegionalEnvironment/${regionId}`, {
+                    headers: getAuthHeader()
+                });
+                const data = await response.json();
+                updateResult({
+                    status: response.status,
+                    message: `获取区域 ${regionId} 的数据`,
+                    data: data
+                });
+            } catch (error) {
+                updateResult({ error: error.message });
+            }
+        }
+
+        async function createRegion() {
+            const regionData = {
+                region_id: document.getElementById('newRegionId').value,
+                region_name: document.getElementById('regionName').value,
+                green_space_rate: parseFloat(document.getElementById('greenSpaceRate').value),
+                air_quality_index: parseInt(document.getElementById('airQualityIndex').value),
+                pollen_concentration: document.getElementById('pollenConcentration').value,
+                climate_type: document.getElementById('climateType').value,
+                avg_temperature: parseFloat(document.getElementById('avgTemperature').value),
+                humidity_level: parseFloat(document.getElementById('humidityLevel').value),
+                update_date: new Date().toISOString()
+            };
+
+            if (!regionData.region_id || !regionData.region_name) {
+                updateResult({ error: '区域ID和区域名称为必填项' });
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/RegionalEnvironment`, {
+                    method: 'POST',
+                    headers: getAuthHeader(),
+                    body: JSON.stringify(regionData)
+                });
+                const data = await response.json();
+                updateResult({
+                    status: response.status,
+                    message: '创建新区域',
+                    requestData: regionData,
+                    responseData: data
+                });
+            } catch (error) {
+                updateResult({ error: error.message });
+            }
+        }
+
+        // 页面加载时自动初始化数据
+        window.onload = function() {
+            updateResult({ message: '页面已加载，可以开始测试API功能' });
+        };
+    </script>
+</body>
+</html> 

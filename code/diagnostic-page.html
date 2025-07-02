@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调研数据编辑功能诊断</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .diagnostic-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fafafa;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="diagnostic-container">
+        <h1>🔧 调研数据编辑功能诊断</h1>
+        
+        <div class="section">
+            <h2>系统状态检查</h2>
+            <button class="btn" onclick="checkSystemStatus()">检查系统状态</button>
+            <div id="systemStatus"></div>
+        </div>
+
+        <div class="grid">
+            <div class="section">
+                <h3>家庭环境数据测试</h3>
+                <button class="btn" onclick="testFamilyEnvironment()">测试家庭环境</button>
+                <div id="familyStatus"></div>
+            </div>
+
+            <div class="section">
+                <h3>个人健康行为测试</h3>
+                <button class="btn" onclick="testHealthBehavior()">测试健康行为</button>
+                <div id="healthStatus"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>问卷调查数据测试</h3>
+            <button class="btn" onclick="testQuestionnaire()">测试问卷数据</button>
+            <div id="questionnaireStatus"></div>
+        </div>
+
+        <div class="section">
+            <h2>完整流程测试</h2>
+            <button class="btn btn-success" onclick="runFullDiagnostic()">运行完整诊断</button>
+            <div id="fullDiagnosticStatus"></div>
+        </div>
+
+        <div class="section">
+            <h2>诊断日志</h2>
+            <button class="btn" onclick="clearLog()">清除日志</button>
+            <div id="diagnosticLog" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        let diagnosticLog = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            diagnosticLog.push(logEntry);
+            
+            const logElement = document.getElementById('diagnosticLog');
+            logElement.textContent = diagnosticLog.join('\n');
+            logElement.scrollTop = logElement.scrollHeight;
+            
+            console.log(logEntry);
+        }
+
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function clearLog() {
+            diagnosticLog = [];
+            document.getElementById('diagnosticLog').textContent = '';
+        }
+
+        // 1. 检查系统状态
+        async function checkSystemStatus() {
+            log('开始系统状态检查');
+            showStatus('systemStatus', '正在检查系统状态...', 'info');
+            
+            try {
+                // 检查后端API是否可访问
+                const response = await fetch('http://localhost:5000/api/PatientBasicInfo', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ 后端API正常，获取到 ${Array.isArray(data) ? data.length : 0} 条患者数据`);
+                    showStatus('systemStatus', 
+                        `✅ 系统状态正常<br>
+                        - 后端API连接成功<br>
+                        - 患者数据: ${Array.isArray(data) ? data.length : 0} 条`, 
+                        'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ 系统状态检查失败: ${error.message}`);
+                showStatus('systemStatus', `❌ 系统状态异常: ${error.message}`, 'error');
+            }
+        }
+
+        // 2. 测试家庭环境数据
+        async function testFamilyEnvironment() {
+            log('开始测试家庭环境数据');
+            showStatus('familyStatus', '正在测试家庭环境数据...', 'info');
+            
+            try {
+                const testData = {
+                    household_id: `HH_TEST_${Date.now()}`,
+                    patient_id: 'P001',
+                    residence_type: '1',
+                    building_age: 15,
+                    ventilation_quality: '良好',
+                    indoor_pm25: 25.5,
+                    pet_exposure: true,
+                    pet_type: '猫',
+                    bedding_material: '棉质',
+                    record_date: new Date().toISOString(),
+                    investigator_id: 'INV001'
+                };
+
+                log('发送家庭环境POST请求');
+                const response = await fetch('http://localhost:5000/api/HouseholdEnvironment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    log('✅ 家庭环境数据创建成功');
+                    
+                    // 测试更新
+                    testData.building_age = 20;
+                    const updateResponse = await fetch(`http://localhost:5000/api/HouseholdEnvironment/${testData.household_id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(testData)
+                    });
+
+                    if (updateResponse.ok) {
+                        log('✅ 家庭环境数据更新成功');
+                        showStatus('familyStatus', '✅ 家庭环境数据测试通过', 'success');
+                    } else {
+                        throw new Error(`更新失败: HTTP ${updateResponse.status}`);
+                    }
+                } else {
+                    throw new Error(`创建失败: ${JSON.stringify(result)}`);
+                }
+            } catch (error) {
+                log(`❌ 家庭环境测试失败: ${error.message}`);
+                showStatus('familyStatus', `❌ 测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 3. 测试个人健康行为数据
+        async function testHealthBehavior() {
+            log('开始测试个人健康行为数据');
+            showStatus('healthStatus', '正在测试健康行为数据...', 'info');
+            
+            try {
+                const testData = {
+                    individual_id: `IHB_TEST_${Date.now()}`,
+                    patient_id: 'P001',
+                    household_id: `HH_TEST_${Date.now()}`,
+                    diet_pattern: '均衡饮食',
+                    vitamin_d_level: 25.5,
+                    sun_exposure: true,
+                    vaccination_status: true,
+                    antibiotic_usage_frequency: '很少',
+                    early_life_medication: '无特殊用药记录',
+                    smoke_exposure: false,
+                    investigator_id: 'INV001'
+                };
+
+                log('发送健康行为POST请求');
+                const response = await fetch('http://localhost:5000/api/IndividualHealthBehavior', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    log('✅ 健康行为数据创建成功');
+                    
+                    // 测试更新
+                    testData.diet_pattern = '素食为主';
+                    const updateResponse = await fetch(`http://localhost:5000/api/IndividualHealthBehavior/${testData.individual_id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(testData)
+                    });
+
+                    if (updateResponse.ok) {
+                        log('✅ 健康行为数据更新成功');
+                        showStatus('healthStatus', '✅ 健康行为数据测试通过', 'success');
+                    } else {
+                        throw new Error(`更新失败: HTTP ${updateResponse.status}`);
+                    }
+                } else {
+                    throw new Error(`创建失败: ${JSON.stringify(result)}`);
+                }
+            } catch (error) {
+                log(`❌ 健康行为测试失败: ${error.message}`);
+                showStatus('healthStatus', `❌ 测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 4. 测试问卷调查数据
+        async function testQuestionnaire() {
+            log('开始测试问卷调查数据');
+            showStatus('questionnaireStatus', '正在测试问卷数据...', 'info');
+            
+            try {
+                const testData = {
+                    questionnaire_id: `Q_TEST_${Date.now()}`,
+                    patient_id: 'P001',
+                    form_type: '综合健康调研',
+                    fill_date: new Date().toISOString().split('T')[0],
+                    data_source: '线上问卷',
+                    investigator_id: 'INV001',
+                    raw_data: JSON.stringify({
+                        health_score: 85,
+                        risk_factors: ['工作压力'],
+                        recommendations: ['规律作息', '适度运动']
+                    }),
+                    create_time: new Date().toISOString()
+                };
+
+                log('发送问卷数据POST请求');
+                const response = await fetch('http://localhost:5000/api/QuestionnaireData', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    log('✅ 问卷数据创建成功');
+                    
+                    // 测试更新
+                    testData.form_type = '营养状况评估';
+                    const updateResponse = await fetch(`http://localhost:5000/api/QuestionnaireData/${testData.questionnaire_id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(testData)
+                    });
+
+                    if (updateResponse.ok) {
+                        log('✅ 问卷数据更新成功');
+                        showStatus('questionnaireStatus', '✅ 问卷数据测试通过', 'success');
+                    } else {
+                        throw new Error(`更新失败: HTTP ${updateResponse.status}`);
+                    }
+                } else {
+                    throw new Error(`创建失败: ${JSON.stringify(result)}`);
+                }
+            } catch (error) {
+                log(`❌ 问卷数据测试失败: ${error.message}`);
+                showStatus('questionnaireStatus', `❌ 测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 5. 运行完整诊断
+        async function runFullDiagnostic() {
+            log('🚀 开始运行完整诊断流程');
+            showStatus('fullDiagnosticStatus', '正在运行完整诊断...', 'info');
+            
+            try {
+                await checkSystemStatus();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await testFamilyEnvironment();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await testHealthBehavior();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await testQuestionnaire();
+                
+                log('🎉 完整诊断流程执行完毕');
+                showStatus('fullDiagnosticStatus', '🎉 完整诊断流程执行完毕！请查看各模块测试结果和诊断日志。', 'success');
+                
+            } catch (error) {
+                log(`❌ 完整诊断失败: ${error.message}`);
+                showStatus('fullDiagnosticStatus', `❌ 诊断失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 页面加载时初始化
+        window.onload = function() {
+            log('📋 调研数据编辑功能诊断页面已加载');
+            log('💡 提示：请确保后端服务器在 http://localhost:5000 运行');
+        };
+    </script>
+</body>
+</html> 

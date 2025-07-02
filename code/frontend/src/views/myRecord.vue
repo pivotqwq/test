@@ -61,23 +61,43 @@ const formData = ref({
 })
 const currentMemoId = ref(null)
 
-// 表单验证规则
-const rules = {
-  title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
-  content: [{ required: true, message: '请输入内容', trigger: 'blur' }]
+// 获取当前用户ID - 实际应从登录状态获取
+const getCurrentUserId = () => {
+  //const token = localStorage.getItem('token');
+  //const userId = this.$getUserIdFromToken(token);
+  return localStorage.getItem('userId') || 'default_user_id'
 }
 
 // 获取备忘录列表
 const fetchMemos = async () => {
   loading.value = true
   try {
-    const response = await fetch('/api/memos')
-    const data = await response.json()
-    memos.value = data
+    const userId = getCurrentUserId()
+    const response = await fetch(`http://localhost:5000/api/mem/myMemos?userId=${userId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    if (result.code === 200) {
+      memos.value = result.data || [];
+    } else {
+      throw new Error(result.message || '获取备忘录失败');
+    }
   } catch (error) {
-    ElMessage.error('获取备忘录失败: ' + error.message)
+    console.error('API Error:', error);
+    ElMessage.error('获取备忘录失败: ' + error.message);
+    memos.value = [];
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
@@ -100,29 +120,48 @@ const editMemo = (memo) => {
 // 提交表单
 const submitForm = async () => {
   try {
+    const userId = getCurrentUserId()
     const url = currentMemoId.value 
-      ? `/api/memos/${currentMemoId.value}`
-      : '/api/memos'
+      ? `http://localhost:5000/api/mem/changeMemos?id=${currentMemoId.value}`
+      : 'http://localhost:5000/api/mem/addMemos'
     
     const method = currentMemoId.value ? 'PUT' : 'POST'
+    
+    const requestBody = currentMemoId.value
+      ? { title: formData.value.title, content: formData.value.content }
+      : { 
+          title: formData.value.title, 
+          content: formData.value.content,
+          userid: userId,
+          isdone: 0,
+          created_at: new Date().toISOString()
+        }
     
     const response = await fetch(url, {
       method,
       headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('token'),
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(formData.value)
-    })
-    
+      body: JSON.stringify(requestBody)
+    });
+
     if (!response.ok) {
-      throw new Error('保存失败')
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const result = await response.json();
     
-    ElMessage.success('保存成功')
-    dialogVisible.value = false
-    fetchMemos()
+    if (result.code === 200) {
+      ElMessage.success(currentMemoId.value ? '更新成功' : '新增成功');
+      dialogVisible.value = false;
+      fetchMemos();
+    } else {
+      throw new Error(result.message || '操作失败');
+    }
   } catch (error) {
-    ElMessage.error('保存失败: ' + error.message)
+    console.error('Submit error:', error);
+    ElMessage.error('操作失败: ' + error.message);
   }
 }
 
@@ -134,21 +173,32 @@ const deleteMemo = (id) => {
     type: 'warning'
   }).then(async () => {
     try {
-      const response = await fetch(`/api/memos/${id}`, {
-        method: 'DELETE'
-      })
-      
+      const response = await fetch(`http://localhost:5000/api/mem/del?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token'),
+          'Content-Type': 'application/json'
+        }
+      });
+
       if (!response.ok) {
-        throw new Error('删除失败')
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const result = await response.json();
       
-      ElMessage.success('删除成功')
-      fetchMemos()
+      if (result.code === 200) {
+        ElMessage.success('删除成功');
+        fetchMemos();
+      } else {
+        throw new Error(result.message || '删除失败');
+      }
     } catch (error) {
-      ElMessage.error('删除失败: ' + error.message)
+      console.error('Delete error:', error);
+      ElMessage.error('删除失败: ' + error.message);
     }
   }).catch(() => {
-    ElMessage.info('已取消删除')
+    ElMessage.info('已取消删除');
   })
 }
 

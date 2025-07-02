@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API验证测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        button { padding: 10px 15px; margin: 5px; }
+        textarea { width: 100%; height: 200px; margin: 10px 0; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>API验证测试工具</h1>
+    
+    <div class="section">
+        <h2>1. 家庭环境API测试</h2>
+        <button onclick="testHouseholdEnvironment()">测试家庭环境POST</button>
+        <button onclick="testHouseholdEnvironmentPUT()">测试家庭环境PUT</button>
+        <div id="household-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. 个人健康行为API测试</h2>
+        <button onclick="testIndividualHealthBehavior()">测试健康行为POST</button>
+        <button onclick="testIndividualHealthBehaviorPUT()">测试健康行为PUT</button>
+        <div id="health-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. 问卷调查API测试</h2>
+        <button onclick="testQuestionnaireData()">测试问卷POST</button>
+        <button onclick="testQuestionnaireDataPUT()">测试问卷PUT</button>
+        <div id="questionnaire-result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>API响应日志</h2>
+        <textarea id="log" readonly></textarea>
+        <button onclick="clearLog()">清空日志</button>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:5000/api';
+        const token = localStorage.getItem('token') || 'test-token';
+        
+        function log(message) {
+            const logArea = document.getElementById('log');
+            logArea.value += new Date().toLocaleTimeString() + ' - ' + message + '\n';
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').value = '';
+        }
+        
+        async function testHouseholdEnvironment() {
+            const testData = {
+                household_id: `HH${Date.now()}`,
+                patient_id: 'P001',
+                residence_type: '1',
+                building_age: 10,
+                ventilation_quality: '良好',
+                indoor_pm25: 25.5,
+                pet_exposure: false,
+                pet_type: '无',
+                bedding_material: '棉质',
+                record_date: new Date().toISOString(),
+                investigator_id: 'INV001'
+            };
+            
+            log('测试家庭环境POST数据: ' + JSON.stringify(testData, null, 2));
+            
+            try {
+                const response = await fetch(`${baseUrl}/HouseholdEnvironment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    document.getElementById('household-result').innerHTML = '<div class="success">家庭环境POST成功</div>';
+                    log('家庭环境POST成功: ' + result);
+                } else {
+                    document.getElementById('household-result').innerHTML = '<div class="error">家庭环境POST失败</div>';
+                    log('家庭环境POST失败 (' + response.status + '): ' + result);
+                }
+            } catch (error) {
+                document.getElementById('household-result').innerHTML = '<div class="error">请求错误: ' + error.message + '</div>';
+                log('家庭环境POST错误: ' + error.message);
+            }
+        }
+        
+        async function testHouseholdEnvironmentPUT() {
+            const testData = {
+                household_id: 'HE001',
+                patient_id: 'P001',
+                residence_type: '2',
+                building_age: 15,
+                ventilation_quality: '一般',
+                indoor_pm25: 30.0,
+                pet_exposure: true,
+                pet_type: '猫',
+                bedding_material: '丝质',
+                record_date: new Date().toISOString(),
+                investigator_id: 'INV001'
+            };
+            
+            log('测试家庭环境PUT数据: ' + JSON.stringify(testData, null, 2));
+            
+            try {
+                const response = await fetch(`${baseUrl}/HouseholdEnvironment/HE001`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    document.getElementById('household-result').innerHTML += '<div class="success">家庭环境PUT成功</div>';
+                    log('家庭环境PUT成功: ' + result);
+                } else {
+                    document.getElementById('household-result').innerHTML += '<div class="error">家庭环境PUT失败</div>';
+                    log('家庭环境PUT失败 (' + response.status + '): ' + result);
+                }
+            } catch (error) {
+                document.getElementById('household-result').innerHTML += '<div class="error">请求错误: ' + error.message + '</div>';
+                log('家庭环境PUT错误: ' + error.message);
+            }
+        }
+        
+        async function testIndividualHealthBehavior() {
+            const testData = {
+                individual_id: `IHB${Date.now()}`,
+                patient_id: 'P001',
+                household_id: 'HH001',
+                diet_pattern: '均衡饮食',
+                vitamin_d_level: 25.0,
+                sun_exposure: true,
+                vaccination_status: true,
+                antibiotic_usage_frequency: '很少',
+                early_life_medication: '无特殊用药记录',
+                smoke_exposure: false,
+                investigator_id: 'INV001'
+            };
+            
+            log('测试健康行为POST数据: ' + JSON.stringify(testData, null, 2));
+            
+            try {
+                const response = await fetch(`${baseUrl}/IndividualHealthBehavior`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    document.getElementById('health-result').innerHTML = '<div class="success">健康行为POST成功</div>';
+                    log('健康行为POST成功: ' + result);
+                } else {
+                    document.getElementById('health-result').innerHTML = '<div class="error">健康行为POST失败</div>';
+                    log('健康行为POST失败 (' + response.status + '): ' + result);
+                }
+            } catch (error) {
+                document.getElementById('health-result').innerHTML = '<div class="error">请求错误: ' + error.message + '</div>';
+                log('健康行为POST错误: ' + error.message);
+            }
+        }
+        
+        async function testIndividualHealthBehaviorPUT() {
+            const testData = {
+                individual_id: 'IHB001',
+                patient_id: 'P001',
+                household_id: 'HH001',
+                diet_pattern: '素食为主',
+                vitamin_d_level: 30.0,
+                sun_exposure: false,
+                vaccination_status: true,
+                antibiotic_usage_frequency: '偶尔',
+                early_life_medication: '维生素D补充',
+                smoke_exposure: false,
+                investigator_id: 'INV001'
+            };
+            
+            log('测试健康行为PUT数据: ' + JSON.stringify(testData, null, 2));
+            
+            try {
+                const response = await fetch(`${baseUrl}/IndividualHealthBehavior/IHB001`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    document.getElementById('health-result').innerHTML += '<div class="success">健康行为PUT成功</div>';
+                    log('健康行为PUT成功: ' + result);
+                } else {
+                    document.getElementById('health-result').innerHTML += '<div class="error">健康行为PUT失败</div>';
+                    log('健康行为PUT失败 (' + response.status + '): ' + result);
+                }
+            } catch (error) {
+                document.getElementById('health-result').innerHTML += '<div class="error">请求错误: ' + error.message + '</div>';
+                log('健康行为PUT错误: ' + error.message);
+            }
+        }
+        
+        async function testQuestionnaireData() {
+            const testData = {
+                questionnaire_id: `Q${Date.now()}`,
+                patient_id: 'P001',
+                form_type: '综合健康调研',
+                fill_date: new Date().toISOString().split('T')[0],
+                data_source: '线上问卷',
+                investigator_id: 'INV001',
+                raw_data: JSON.stringify({
+                    health_score: 85,
+                    risk_factors: ['待评估'],
+                    recommendations: ['定期复查']
+                }),
+                create_time: new Date().toISOString()
+            };
+            
+            log('测试问卷POST数据: ' + JSON.stringify(testData, null, 2));
+            
+            try {
+                const response = await fetch(`${baseUrl}/QuestionnaireData`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    document.getElementById('questionnaire-result').innerHTML = '<div class="success">问卷POST成功</div>';
+                    log('问卷POST成功: ' + result);
+                } else {
+                    document.getElementById('questionnaire-result').innerHTML = '<div class="error">问卷POST失败</div>';
+                    log('问卷POST失败 (' + response.status + '): ' + result);
+                }
+            } catch (error) {
+                document.getElementById('questionnaire-result').innerHTML = '<div class="error">请求错误: ' + error.message + '</div>';
+                log('问卷POST错误: ' + error.message);
+            }
+        }
+        
+        async function testQuestionnaireDataPUT() {
+            const testData = {
+                questionnaire_id: 'Q001',
+                patient_id: 'P001',
+                form_type: '心理健康',
+                fill_date: new Date().toISOString().split('T')[0],
+                data_source: '电话访谈',
+                investigator_id: 'INV001',
+                raw_data: JSON.stringify({
+                    health_score: 90,
+                    risk_factors: ['轻度焦虑'],
+                    recommendations: ['心理咨询', '定期复查']
+                }),
+                create_time: new Date().toISOString()
+            };
+            
+            log('测试问卷PUT数据: ' + JSON.stringify(testData, null, 2));
+            
+            try {
+                const response = await fetch(`${baseUrl}/QuestionnaireData/Q001`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    document.getElementById('questionnaire-result').innerHTML += '<div class="success">问卷PUT成功</div>';
+                    log('问卷PUT成功: ' + result);
+                } else {
+                    document.getElementById('questionnaire-result').innerHTML += '<div class="error">问卷PUT失败</div>';
+                    log('问卷PUT失败 (' + response.status + '): ' + result);
+                }
+            } catch (error) {
+                document.getElementById('questionnaire-result').innerHTML += '<div class="error">请求错误: ' + error.message + '</div>';
+                log('问卷PUT错误: ' + error.message);
+            }
+        }
+        
+        // 页面加载时的提示
+        window.onload = function() {
+            log('API验证测试工具已加载');
+            log('当前token: ' + (token || '未设置'));
+            log('基础URL: ' + baseUrl);
+        };
+    </script>
+</body>
+</html> 

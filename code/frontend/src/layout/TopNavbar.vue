@@ -79,10 +79,17 @@ export default {
         const data = await response.json();
     
         if (data.code === 200){
+          // 安全处理头像数据
+          let avatar = defaultAvatar;
+          if (data.data.urlBase64) {
+            avatar = data.data.urlBase64.startsWith('data:image/') 
+              ? data.data.urlBase64 
+              : `data:image/png;base64,${data.data.urlBase64}`;
+          }
+          
           this.user = {
             name: data.data.name || "姓名未设置",
-            avatar: data.data.urlBase64.startsWith('data:image/') ? data.data.urlBase64 : `data:image/png;base64,${data.data.urlBase64}` || defaultAvatar,
-            
+            avatar: avatar
           }
         }
       } catch (error) {

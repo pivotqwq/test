@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "F:\\projects\\disease-data-management\\code\\backend\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|f:\\projects\\disease-data-management\\code\\backend\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|solutionrelative:data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|f:\\projects\\disease-data-management\\code\\backend\\controllers\\patientinfocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|solutionrelative:controllers\\patientinfocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|f:\\projects\\disease-data-management\\code\\backend\\controllers\\memcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|solutionrelative:controllers\\memcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -11,35 +19,33 @@
       "RelativeMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|solutionrelative:controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|f:\\projects\\disease-data-management\\code\\backend\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|solutionrelative:data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|f:\\projects\\disease-data-management\\code\\backend\\databaseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|solutionrelative:databaseservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|f:\\projects\\disease-data-management\\code\\backend\\controllers\\testcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|solutionrelative:controllers\\testcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|f:\\projects\\disease-data-management\\code\\backend\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|solutionrelative:controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|f:\\projects\\disease-data-management\\code\\backend\\controllers\\patientinfocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9303DC21-C99D-4E55-B367-E3B2141ABE90}|backend.csproj|solutionrelative:controllers\\patientinfocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
     {
-      "Orientation": 0,
+      "Orientation": 1,
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 8,
+          "DockedHeight": 282,
+          "SelectedChildIndex": 11,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "memController.cs",
+              "DocumentMoniker": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\memController.cs",
+              "RelativeDocumentMoniker": "Controllers\\memController.cs",
+              "ToolTip": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\memController.cs",
+              "RelativeToolTip": "Controllers\\memController.cs",
+              "ViewState": "AgIAABUAAAAAAAAAAAAAAKoAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-29T11:03:20.003Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{e506b91c-c606-466a-90a9-123d1d1e12b3}"
@@ -51,10 +57,6 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
             },
             {
               "$type": "Bookmark",
@@ -74,98 +76,68 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "memController.cs",
-              "DocumentMoniker": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\memController.cs",
-              "RelativeDocumentMoniker": "Controllers\\memController.cs",
-              "ToolTip": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\memController.cs",
-              "RelativeToolTip": "Controllers\\memController.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAADwvwwAAAAtAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-26T08:07:50.086Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "UserController.cs",
-              "DocumentMoniker": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\UserController.cs",
-              "RelativeDocumentMoniker": "Controllers\\UserController.cs",
-              "ToolTip": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\UserController.cs",
-              "RelativeToolTip": "Controllers\\UserController.cs",
-              "ViewState": "AgIAAC4AAAAAAAAAAAAAAD8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-17T08:04:18.021Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "TestController.cs",
-              "DocumentMoniker": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\TestController.cs",
-              "RelativeDocumentMoniker": "Controllers\\TestController.cs",
-              "ToolTip": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\TestController.cs",
-              "RelativeToolTip": "Controllers\\TestController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-20T06:00:01.193Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 1,
               "Title": "patientInfoController.cs",
               "DocumentMoniker": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\patientInfoController.cs",
               "RelativeDocumentMoniker": "Controllers\\patientInfoController.cs",
               "ToolTip": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\patientInfoController.cs",
               "RelativeToolTip": "Controllers\\patientInfoController.cs",
-              "ViewState": "AgIAAEYAAAAAAAAAAAAIwDUAAABNAAAAAAAAAA==",
+              "ViewState": "AgIAAH0AAAAAAAAAAAAcwHoAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-20T05:59:57.952Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
-              "ToolTip": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "Controllers\\AuthController.cs",
-              "ViewState": "AgIAACkAAAAAAAAAAAAAAD0AAABEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-18T13:51:18.222Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "F:\\projects\\disease-data-management\\code\\backend\\Data\\ApplicationDbContext.cs",
-              "RelativeDocumentMoniker": "Data\\ApplicationDbContext.cs",
-              "ToolTip": "F:\\projects\\disease-data-management\\code\\backend\\Data\\ApplicationDbContext.cs",
-              "RelativeToolTip": "Data\\ApplicationDbContext.cs",
-              "ViewState": "AgIAABUAAAAAAAAAAAAcwCEAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-17T08:11:36.535Z",
+              "WhenOpened": "2025-06-29T11:59:25.97Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AuthController.cs",
+              "ToolTip": "F:\\projects\\disease-data-management\\code\\backend\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "Controllers\\AuthController.cs",
+              "ViewState": "AgIAABYAAAAAAAAAAAAAwCUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-28T08:31:53.049Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "DatabaseService.cs",
               "DocumentMoniker": "F:\\projects\\disease-data-management\\code\\backend\\DatabaseService.cs",
               "RelativeDocumentMoniker": "DatabaseService.cs",
               "ToolTip": "F:\\projects\\disease-data-management\\code\\backend\\DatabaseService.cs",
               "RelativeToolTip": "DatabaseService.cs",
-              "ViewState": "AgIAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-17T08:07:49.749Z",
+              "WhenOpened": "2025-06-28T08:28:46.352Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "F:\\projects\\disease-data-management\\code\\backend\\Data\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "Data\\ApplicationDbContext.cs",
+              "ToolTip": "F:\\projects\\disease-data-management\\code\\backend\\Data\\ApplicationDbContext.cs",
+              "RelativeToolTip": "Data\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAIA+wBsAAAArAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-28T08:20:25.831Z",
               "EditorCaption": ""
             }
           ]
         },
         {
-          "DockedWidth": 689,
+          "DockedHeight": 118,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            }
+          ]
+        },
+        {
+          "DockedHeight": 200,
           "SelectedChildIndex": -1,
           "Children": [
             {

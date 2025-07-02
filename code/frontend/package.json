@@ -12,7 +12,9 @@
     "@element-plus/icons-vue": "^2.3.1",
     "axios": "^1.9.0",
     "core-js": "^3.8.3",
+    "echarts": "^5.6.0",
     "element-plus": "^2.10.1",
+    "html2pdf.js": "^0.10.3",
     "path-browserify": "^1.0.1",
     "vue-router": "^4.5.1"
   },
@@ -36,6 +38,12 @@
     "root": true,
     "env": {
       "node": true
+    },
+    "globals": {
+      "defineProps": "readonly",
+      "defineEmits": "readonly",
+      "defineExpose": "readonly",
+      "withDefaults": "readonly"
     },
     "extends": [
       "plugin:vue/vue3-essential",

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分页功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        input, select {
+            margin: 5px;
+            padding: 5px;
+            width: 100px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .pagination-controls {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .result-box {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>患者列表分页功能测试</h1>
+    
+    <div class="test-section">
+        <h2>分页控制</h2>
+        <div class="pagination-controls">
+            <label>页码: <input type="number" id="pageInput" value="1" min="1"></label>
+            
+            <label>每页条数: 
+                <select id="limitSelect">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
+            </label>
+            
+            <label>搜索姓名: <input type="text" id="nameSearch" placeholder="输入姓名"></label>
+            
+            <label>搜索病例号: <input type="text" id="medicalRecordSearch" placeholder="输入病例号"></label>
+            
+            <button onclick="testPagination()">获取患者列表</button>
+            <button onclick="clearResults()">清除结果</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>API响应信息</h2>
+        <div id="apiInfo" class="result-box">点击"获取患者列表"开始测试...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>患者列表</h2>
+        <table id="patientTable">
+            <thead>
+                <tr>
+                    <th>序号</th>
+                    <th>患者ID</th>
+                    <th>姓名</th>
+                    <th>性别</th>
+                    <th>年龄</th>
+                    <th>居住类型</th>
+                    <th>创建时间</th>
+                </tr>
+            </thead>
+            <tbody id="patientTableBody">
+                <tr>
+                    <td colspan="7">暂无数据</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="test-section">
+        <h2>分页导航</h2>
+        <div id="paginationNav">
+            <button onclick="goToPage(1)">首页</button>
+            <button onclick="goToPage(Math.max(1, currentPage - 1))">上一页</button>
+            <span id="pageInfo">第 1 页</span>
+            <button onclick="goToPage(currentPage + 1)">下一页</button>
+            <button onclick="goToPage(totalPages)">末页</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let totalRecords = 0;
+
+        function formatGender(gender) {
+            const genderMap = { 'M': '男', 'F': '女' };
+            return genderMap[gender] || gender || '未知';
+        }
+
+        function formatResidenceType(type) {
+            const typeMap = { '1': '城市', '2': '城镇', '3': '农村' };
+            return typeMap[type] || '未知';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '未知';
+            const date = new Date(dateString);
+            return date.toLocaleString('zh-CN');
+        }
+
+        function calculateAge(birthDate) {
+            if (!birthDate) return 0;
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+
+        async function testPagination() {
+            const page = parseInt(document.getElementById('pageInput').value) || 1;
+            const limit = parseInt(document.getElementById('limitSelect').value) || 10;
+            const name = document.getElementById('nameSearch').value.trim();
+            const medicalRecordNo = document.getElementById('medicalRecordSearch').value.trim();
+            
+            const apiInfo = document.getElementById('apiInfo');
+            apiInfo.innerHTML = '正在获取数据...';
+            
+            try {
+                // 构建请求URL
+                let url = `http://localhost:5000/api/PatientBasicInfo/paged?page=${page}&limit=${limit}`;
+                if (name) url += `&name=${encodeURIComponent(name)}`;
+                if (medicalRecordNo) url += `&medicalRecordNo=${encodeURIComponent(medicalRecordNo)}`;
+                
+                console.log('请求URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                // 显示API响应信息
+                const responseInfo = {
+                    status: response.status,
+                    statusText: response.statusText,
+                    url: url,
+                    data: result
+                };
+                
+                apiInfo.innerHTML = JSON.stringify(responseInfo, null, 2);
+                
+                if (result.code === 200) {
+                    // 更新分页信息
+                    currentPage = result.page;
+                    totalPages = result.totalPages;
+                    totalRecords = result.total;
+                    
+                    // 更新分页导航
+                    document.getElementById('pageInfo').textContent = 
+                        `第 ${currentPage} 页，共 ${totalPages} 页，总共 ${totalRecords} 条记录`;
+                    
+                    // 更新表格
+                    updatePatientTable(result.data);
+                    
+                    // 更新页码输入框
+                    document.getElementById('pageInput').value = currentPage;
+                    
+                    apiInfo.innerHTML += `\n\n✅ 分页功能正常！\n获取到 ${result.data.length} 条记录`;
+                } else {
+                    apiInfo.innerHTML += `\n\n❌ API返回错误: ${result.message || '未知错误'}`;
+                }
+                
+            } catch (error) {
+                console.error('请求失败:', error);
+                apiInfo.innerHTML = `❌ 请求失败: ${error.message}`;
+            }
+        }
+
+        function updatePatientTable(patients) {
+            const tbody = document.getElementById('patientTableBody');
+            
+            if (!patients || patients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7">暂无数据</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = patients.map((patient, index) => `
+                <tr>
+                    <td>${index + 1 + (currentPage - 1) * parseInt(document.getElementById('limitSelect').value)}</td>
+                    <td>${patient.patient_id || '未知'}</td>
+                    <td>${patient.name || '未知'}</td>
+                    <td>${formatGender(patient.gender)}</td>
+                    <td>${calculateAge(patient.birth_date)}</td>
+                    <td>${formatResidenceType(patient.residence_type)}</td>
+                    <td>${formatDate(patient.create_time)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > totalPages) return;
+            document.getElementById('pageInput').value = page;
+            testPagination();
+        }
+
+        function clearResults() {
+            document.getElementById('apiInfo').innerHTML = '点击"获取患者列表"开始测试...';
+            document.getElementById('patientTableBody').innerHTML = '<tr><td colspan="7">暂无数据</td></tr>';
+            document.getElementById('pageInfo').textContent = '第 1 页';
+            currentPage = 1;
+            totalPages = 1;
+            totalRecords = 0;
+        }
+
+        // 页面加载完成后自动测试一次
+        window.onload = function() {
+            testPagination();
+        };
+    </script>
+</body>
+</html> 

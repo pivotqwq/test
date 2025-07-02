@@ -150,7 +150,7 @@ export default {
         if (data.code === 200) {
           // 3. 映射返回数据到userInfo对象
           this.userInfo = {
-            id: data.data.id || '',
+            id: data.data.Id || '',
             fullname: data.data.name || '',
             profession: data.data.profession || '',
             username: data.data.username || '',
@@ -222,8 +222,13 @@ export default {
     // 头像上传成功
     handleAvatarSuccess(response) {
       if (response.code === 200) {
-        this.userInfo.avatar = response.data.avatarPath
+        // 修复：后端直接返回avatarPath，不是data.avatarPath
+        this.userInfo.avatar = response.avatarPath
         this.$message.success('头像上传成功')
+        // 重新获取用户信息以确保数据同步
+        setTimeout(() => {
+          this.fetchUserInfo()
+        }, 500)
       } else {
         this.$message.error(response.message || '头像上传失败')
       }
@@ -251,6 +256,10 @@ export default {
       return true
     },
     getAvatarUrl(avatarPath) {
+    // 检查avatarPath是否为空
+    if (!avatarPath) {
+      return '';
+    }
     // 如果已经是完整的data URL就直接返回
     if (avatarPath.startsWith('data:image/')) {
       return avatarPath;

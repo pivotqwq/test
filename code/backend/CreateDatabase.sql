@@ -1,0 +1,2 @@
+-- 创建数据库
+CREATE DATABASE "MyDatabase" WITH ENCODING 'UTF8'; 

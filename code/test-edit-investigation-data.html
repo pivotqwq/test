@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调研数据编辑功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>调研数据编辑功能测试</h1>
+    
+    <div class="test-section">
+        <h2>1. 测试数据获取</h2>
+        <button class="button" onclick="testDataFetch()">获取测试患者数据</button>
+        <div id="fetchResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. 测试家庭环境数据编辑</h2>
+        <button class="button" onclick="testFamilyEnvironmentEdit()">测试家庭环境编辑</button>
+        <div id="familyResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. 测试个人健康行为数据编辑</h2>
+        <button class="button" onclick="testHealthBehaviorEdit()">测试健康行为编辑</button>
+        <div id="healthResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. 测试问卷调查数据编辑</h2>
+        <button class="button" onclick="testQuestionnaireEdit()">测试问卷数据编辑</button>
+        <div id="questionnaireResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. 完整测试流程</h2>
+        <button class="button" onclick="runFullTest()">运行完整测试</button>
+        <div id="fullTestResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        const TEST_PATIENT_ID = 'P001';
+
+        // 生成测试数据ID
+        function generateId() {
+            return Date.now().toString() + Math.floor(Math.random() * 1000);
+        }
+
+        // 显示结果
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        // 显示JSON数据
+        function showJSON(elementId, data, message = '') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <div class="info">${message}</div>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+
+        // 1. 测试数据获取
+        async function testDataFetch() {
+            try {
+                showResult('fetchResult', '正在获取患者数据...', 'info');
+                
+                const response = await fetch(`${API_BASE}/PatientBasicInfo`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+
+                const patients = await response.json();
+                console.log('获取到的患者数据:', patients);
+                
+                if (Array.isArray(patients) && patients.length > 0) {
+                    showJSON('fetchResult', patients.slice(0, 3), `成功获取到 ${patients.length} 个患者数据，显示前3个：`);
+                } else {
+                    showResult('fetchResult', '未获取到患者数据，将使用测试数据', 'info');
+                }
+
+            } catch (error) {
+                console.error('获取患者数据失败:', error);
+                showResult('fetchResult', `获取失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 2. 测试家庭环境数据编辑
+        async function testFamilyEnvironmentEdit() {
+            try {
+                showResult('familyResult', '测试家庭环境数据编辑...', 'info');
+                
+                const testData = {
+                    household_id: `HH${generateId()}`,
+                    patient_id: TEST_PATIENT_ID,
+                    residence_type: '1',
+                    building_age: 15,
+                    ventilation_quality: '良好',
+                    indoor_pm25: 25.5,
+                    pet_exposure: true,
+                    pet_type: '猫',
+                    bedding_material: '棉质',
+                    record_date: new Date().toISOString(),
+                    investigator_id: 'INV001'
+                };
+
+                console.log('发送家庭环境数据:', testData);
+
+                // 测试POST请求
+                const postResponse = await fetch(`${API_BASE}/HouseholdEnvironment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                console.log('POST响应状态:', postResponse.status);
+                const postResult = await postResponse.json();
+                console.log('POST响应结果:', postResult);
+
+                if (postResponse.ok) {
+                    showResult('familyResult', '✅ 家庭环境数据创建成功', 'success');
+                    
+                    // 测试PUT请求
+                    testData.building_age = 20; // 修改建筑年龄
+                    testData.indoor_pm25 = 30.0; // 修改PM2.5值
+                    
+                    const putResponse = await fetch(`${API_BASE}/HouseholdEnvironment/${testData.household_id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(testData)
+                    });
+
+                    const putResult = await putResponse.json();
+                    console.log('PUT响应结果:', putResult);
+
+                    if (putResponse.ok) {
+                        showJSON('familyResult', {
+                            create: postResult,
+                            update: putResult
+                        }, '✅ 家庭环境数据创建和更新都成功！');
+                    } else {
+                        throw new Error(`更新失败: ${JSON.stringify(putResult)}`);
+                    }
+                } else {
+                    throw new Error(`创建失败: ${JSON.stringify(postResult)}`);
+                }
+
+            } catch (error) {
+                console.error('家庭环境测试失败:', error);
+                showResult('familyResult', `❌ 测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 3. 测试个人健康行为数据编辑
+        async function testHealthBehaviorEdit() {
+            try {
+                showResult('healthResult', '测试个人健康行为数据编辑...', 'info');
+                
+                const testData = {
+                    individual_id: `IHB${generateId()}`,
+                    patient_id: TEST_PATIENT_ID,
+                    household_id: `HH${generateId()}`,
+                    diet_pattern: '均衡饮食',
+                    vitamin_d_level: 25.5,
+                    sun_exposure: true,
+                    vaccination_status: true,
+                    antibiotic_usage_frequency: '很少',
+                    early_life_medication: '无特殊用药记录',
+                    smoke_exposure: false,
+                    investigator_id: 'INV001'
+                };
+
+                console.log('发送健康行为数据:', testData);
+
+                // 测试POST请求
+                const postResponse = await fetch(`${API_BASE}/IndividualHealthBehavior`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const postResult = await postResponse.json();
+                console.log('POST响应结果:', postResult);
+
+                if (postResponse.ok) {
+                    showResult('healthResult', '✅ 健康行为数据创建成功', 'success');
+                    
+                    // 测试PUT请求
+                    testData.diet_pattern = '素食为主'; // 修改饮食模式
+                    testData.vitamin_d_level = 30.0; // 修改维生素D水平
+                    
+                    const putResponse = await fetch(`${API_BASE}/IndividualHealthBehavior/${testData.individual_id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(testData)
+                    });
+
+                    const putResult = await putResponse.json();
+                    console.log('PUT响应结果:', putResult);
+
+                    if (putResponse.ok) {
+                        showJSON('healthResult', {
+                            create: postResult,
+                            update: putResult
+                        }, '✅ 健康行为数据创建和更新都成功！');
+                    } else {
+                        throw new Error(`更新失败: ${JSON.stringify(putResult)}`);
+                    }
+                } else {
+                    throw new Error(`创建失败: ${JSON.stringify(postResult)}`);
+                }
+
+            } catch (error) {
+                console.error('健康行为测试失败:', error);
+                showResult('healthResult', `❌ 测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 4. 测试问卷调查数据编辑
+        async function testQuestionnaireEdit() {
+            try {
+                showResult('questionnaireResult', '测试问卷调查数据编辑...', 'info');
+                
+                const testData = {
+                    questionnaire_id: `Q${generateId()}`,
+                    patient_id: TEST_PATIENT_ID,
+                    form_type: '综合健康调研',
+                    fill_date: new Date().toISOString().split('T')[0],
+                    data_source: '线上问卷',
+                    investigator_id: 'INV001',
+                    raw_data: JSON.stringify({
+                        health_score: 85,
+                        risk_factors: ['工作压力'],
+                        recommendations: ['规律作息', '适度运动']
+                    }),
+                    create_time: new Date().toISOString()
+                };
+
+                console.log('发送问卷数据:', testData);
+
+                // 测试POST请求
+                const postResponse = await fetch(`${API_BASE}/QuestionnaireData`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const postResult = await postResponse.json();
+                console.log('POST响应结果:', postResult);
+
+                if (postResponse.ok) {
+                    showResult('questionnaireResult', '✅ 问卷数据创建成功', 'success');
+                    
+                    // 测试PUT请求
+                    testData.form_type = '营养状况评估'; // 修改问卷类型
+                    testData.raw_data = JSON.stringify({
+                        health_score: 90,
+                        risk_factors: ['营养不均衡'],
+                        recommendations: ['改善饮食', '营养补充']
+                    });
+                    
+                    const putResponse = await fetch(`${API_BASE}/QuestionnaireData/${testData.questionnaire_id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(testData)
+                    });
+
+                    const putResult = await putResponse.json();
+                    console.log('PUT响应结果:', putResult);
+
+                    if (putResponse.ok) {
+                        showJSON('questionnaireResult', {
+                            create: postResult,
+                            update: putResult
+                        }, '✅ 问卷数据创建和更新都成功！');
+                    } else {
+                        throw new Error(`更新失败: ${JSON.stringify(putResult)}`);
+                    }
+                } else {
+                    throw new Error(`创建失败: ${JSON.stringify(postResult)}`);
+                }
+
+            } catch (error) {
+                console.error('问卷数据测试失败:', error);
+                showResult('questionnaireResult', `❌ 测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 5. 运行完整测试流程
+        async function runFullTest() {
+            showResult('fullTestResult', '开始运行完整测试流程...', 'info');
+            
+            try {
+                // 依次执行所有测试
+                await testDataFetch();
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 等待1秒
+                
+                await testFamilyEnvironmentEdit();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                await testHealthBehaviorEdit();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                await testQuestionnaireEdit();
+                
+                showResult('fullTestResult', '✅ 完整测试流程执行完毕！请查看各个模块的测试结果。', 'success');
+                
+            } catch (error) {
+                console.error('完整测试失败:', error);
+                showResult('fullTestResult', `❌ 完整测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 页面加载完成后显示提示
+        window.onload = function() {
+            console.log('测试页面已加载，可以开始测试调研数据编辑功能');
+        };
+    </script>
+</body>
+</html> 

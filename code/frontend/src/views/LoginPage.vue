@@ -145,33 +145,46 @@ export default {
         
         this.loading = true
         try {
-          const response = await fetch('http://localhost:5000/api/Auth/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(this.loginForm)
-          })
-          
-          const data = await response.json()
+          const { authApi } = await import('@/api')
+          const data = await authApi.login(this.loginForm)
 
-          if (response.ok && data.success) {
+          if (data.success) {
             // 存储token和用户名
-            //localStorage.setItem('token', data.token);
-            localStorage.setItem('username', this.loginForm.username);
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('username', data.username);
+            localStorage.setItem('userId', data.userId);
             this.$message.success('登录成功')
             this.$router.push('/home')
           } else {
             this.$message.error(data.message || '登录失败')
           }
         } catch (error) {
-          this.$message.error('网络错误，请稍后再试')
+          console.error('Login error:', error)
+          // 如果是网络错误或其他未被拦截器处理的错误，显示登录相关的友好错误信息
+          if (error.message.includes('网络连接失败') || error.message.includes('fetch')) {
+            this.$message.error('网络连接失败，请检查网络后重试')
+          } else if (!error.message.includes('用户名或密码错误')) {
+            // 如果不是登录凭据错误，但也不是网络错误，统一显示为登录失败
+            this.$message.error('登录失败，请重试')
+          }
         } finally {
           this.loading = false
         }
       })
     },
-
+    getUserIdFromToken(token) {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(base64));
+    
+      // 从sub或自定义字段获取用户ID
+      return payload.sub || payload.nameid; 
+    } catch (e) {
+        console.error('解析Token失败', e);
+        return null;
+      }
+    },
     // 处理注册
     async handleRegister() {
       this.$refs.registerForm.validate(async (valid) => {
@@ -179,21 +192,14 @@ export default {
         
         this.registerLoading = true
         try {
-          const response = await fetch('http://localhost:5000/api/Auth/register', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              username: this.registerForm.username,
-              password: this.registerForm.password,
-              email: this.registerForm.email
-            })
+          const { authApi } = await import('@/api')
+          const data = await authApi.register({
+            username: this.registerForm.username,
+            password: this.registerForm.password,
+            email: this.registerForm.email
           })
-          
-          const data = await response.json()
 
-          if (response.ok && data.success) {
+          if (data.success) {
             this.$message.success('注册成功')
             this.activeTab = '1'
             this.$refs.registerForm.resetFields()
@@ -201,7 +207,8 @@ export default {
             this.$message.error(data.message || '注册失败')
           }
         } catch (error) {
-          this.$message.error('网络错误，请稍后再试')
+          console.error('Register error:', error)
+          // 错误信息已经在请求拦截器中处理了，这里不再重复显示
         } finally {
           this.registerLoading = false
         }

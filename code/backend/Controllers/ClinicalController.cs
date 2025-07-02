@@ -25,7 +25,7 @@ namespace backend.Controllers
         [HttpGet("patient")]
         public async Task<IActionResult> GetPatients(string? name, int page = 1,int limit = 10)
         {
-            var query = _context.Patients.AsQueryable();
+            var query = _context.PatientBasicInfos.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -44,12 +44,12 @@ namespace backend.Controllers
 
             var patientDtos = patients.Select(p => new PatientDto
             {
-                PatientId = p.id,
-                MedicalRecordNo = p.medical_record_no,
+                PatientId = p.patient_id,
+                MedicalRecordNo = p.patient_id, // PatientBasicInfo没有medical_record_no，使用patient_id
                 Name = p.name,
                 Gender = p.gender,
-                BirthDate = p.birth_date,
-                Address = p.address
+                BirthDate = p.birth_date.ToString("yyyy-MM-dd"),
+                Address = p.residence_type
             }).ToList();
 
             return Ok(new { code = 200,tot=totalCount, rows = patientDtos });
@@ -58,25 +58,26 @@ namespace backend.Controllers
         [HttpPost("patientAdd")]
         public async Task<IActionResult> CreatePatient([FromBody] CreatePatientRequest request)
         {
-            var existingPatient = await _context.Patients
-                .FirstOrDefaultAsync(p => p.medical_record_no == request.MedicalRecordNo);
+            var existingPatient = await _context.PatientBasicInfos
+                .FirstOrDefaultAsync(p => p.patient_id == request.MedicalRecordNo);
 
             if (existingPatient != null)
             {
-                return BadRequest(new { code = 400, message = "病历号已存在" });
+                return BadRequest(new { code = 400, message = "患者ID已存在" });
             }
 
-            var newPatient = new patients
+            var newPatient = new PatientBasicInfo
             {
-                id = Guid.NewGuid().ToString(),
-                medical_record_no = request.MedicalRecordNo,
-                name = request.Name,
-                gender = request.Gender,
-                birth_date = request.BirthDate,
-                address = request.Address
+                patient_id = request.MedicalRecordNo ?? Guid.NewGuid().ToString(),
+                name = request.Name ?? "未知",
+                gender = request.Gender ?? "M",
+                birth_date = DateTime.TryParse(request.BirthDate, out var birthDate) ? birthDate : DateTime.UtcNow,
+                residence_type = request.Address ?? "未知",
+                allergy_history = "待补充",
+                create_time = DateTime.UtcNow
             };
 
-            _context.Patients.Add(newPatient);
+            _context.PatientBasicInfos.Add(newPatient);
             await _context.SaveChangesAsync();
 
             return Ok(new { code = 200, data = newPatient });
@@ -86,34 +87,39 @@ namespace backend.Controllers
         [HttpPut("patientUpd")]
         public async Task<IActionResult> UpdatePatient(string patientId,[FromBody] UpdatePatientRequest request)
         {
-            var patient = await _context.Patients.FindAsync(patientId);
+            var patient = await _context.PatientBasicInfos.FindAsync(patientId);
             if (patient == null)
             {
                 return NotFound(new { code = 404, message = "患者不存在" });
             }
 
-            // 检查病历号是否被其他患者使用
+            // 检查患者ID是否被其他患者使用
             if (!string.IsNullOrEmpty(request.MedicalRecordNo))
             {
-                var existingWithMr = await _context.Patients
-                    .AnyAsync(p => p.medical_record_no == request.MedicalRecordNo && p.id != patientId);
+                var existingWithMr = await _context.PatientBasicInfos
+                    .AnyAsync(p => p.patient_id == request.MedicalRecordNo && p.patient_id != patientId);
                 if (existingWithMr)
                 {
-                    return BadRequest(new { code = 400, message = "病历号已被其他患者使用" });
+                    return BadRequest(new { code = 400, message = "患者ID已被其他患者使用" });
                 }
             }
 
             // 更新字段（只更新非空字段）
             if (!string.IsNullOrEmpty(request.MedicalRecordNo))
-                patient.medical_record_no = request.MedicalRecordNo;
+                patient.patient_id = request.MedicalRecordNo;
             if (!string.IsNullOrEmpty(request.Name))
                 patient.name = request.Name;
             if (!string.IsNullOrEmpty(request.Gender))
                 patient.gender = request.Gender;
             if (!string.IsNullOrEmpty(request.BirthDate))
-                patient.birth_date = request.BirthDate;
+            {
+                if (DateTime.TryParse(request.BirthDate, out var birthDate))
+                    patient.birth_date = birthDate;
+            }
             if (!string.IsNullOrEmpty(request.Address))
-                patient.address = request.Address;
+                patient.residence_type = request.Address;
+
+            patient.update_time = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
@@ -123,13 +129,13 @@ namespace backend.Controllers
         [HttpDelete("patientDel")]
         public async Task<IActionResult> DeletePatient(string patientId)
         {
-            var patient = await _context.Patients.FindAsync(patientId);
+            var patient = await _context.PatientBasicInfos.FindAsync(patientId);
             if (patient == null)
             {
                 return NotFound(new { code = 404, message = "患者不存在" });
             }
 
-            _context.Patients.Remove(patient);
+            _context.PatientBasicInfos.Remove(patient);
 
             await _context.SaveChangesAsync();
 

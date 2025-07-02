@@ -1,10 +1,13 @@
 ﻿using backend.Data;
 using backend.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Npgsql; // 确保已安装 Npgsql 包
+using Microsoft.IdentityModel.Tokens;
+using Npgsql;
+using System.Text; // 确保已安装 Npgsql 包
 
 Console.Clear(); // 清除控制台所有内容
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +18,7 @@ Console.WriteLine($"🔗 实际连接字符串: {connectionString}");
 builder.Services.AddCors(options => {
 options.AddPolicy("AllowFrontend", builder => {
 builder
-    .WithOrigins("http://localhost:8080") // 允许的前端域名/端口（开发环境）
+    .WithOrigins("http://localhost:8080", "http://localhost:5173") // 允许的前端域名/端口（开发环境）
     .AllowAnyMethod() // 允许所有 HTTP 方法（GET/POST 等）
     .AllowAnyHeader(); // 允许所有请求头
 });
@@ -24,6 +27,20 @@ builder
 // options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
+// 添加JWT配置
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+            ValidateIssuer = false, // 简化开发，生产环境建议开启
+            ValidateAudience = false
+        };
+    });
+// 添加配置
+builder.Configuration.AddJsonFile("appsettings.json");
 try
 {
     using var connection = new NpgsqlConnection(connectionString);
@@ -53,6 +70,7 @@ if (app.Environment.IsDevelopment())
 // 在中间件管道中启用 CORS（需在 UseAuthorization 之前）
 app.UseCors("AllowFrontend"); // 使用注册的策略名称
 app.UseHttpsRedirection();
+app.UseAuthentication(); // 添加认证中间件
 app.UseAuthorization();
 app.MapControllers();
 
